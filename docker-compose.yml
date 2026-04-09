@@ -29,6 +29,8 @@ services:
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
       ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
       DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
+    volumes:
+      - ./backend/logs:/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -62,9 +64,10 @@ services:
       ELEVEN_API_KEY: ${ELEVEN_API_KEY}
       DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
       BACKEND_URL: http://backend:8000
+    volumes:
+      - ./agent/logs:/app/logs
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
 
   admin:
     build: ./admin

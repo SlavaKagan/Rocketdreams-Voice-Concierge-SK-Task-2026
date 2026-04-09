@@ -72,6 +72,7 @@ class MeridianAgent(Agent):
 
 async def entrypoint(ctx: JobContext):
     """Main entrypoint for each LiveKit job (one per guest session)."""
+    LOG_DIR.mkdir(exist_ok=True)  # Ensure log dir exists in subprocess
     logger.info(f"New session started: room={ctx.room.name}")
 
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
