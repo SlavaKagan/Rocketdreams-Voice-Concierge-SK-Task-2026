@@ -1,4 +1,7 @@
 import logging
+import sys
+from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
 from livekit.agents import (
     AutoSubscribe,
     JobContext,
@@ -13,11 +16,32 @@ from app.config import config
 from app.knowledge import search_faq, get_active_voice_id
 from app.prompts import SYSTEM_PROMPT, GREETING
 
+# ── Logging setup ──────────────────────────────────────────────────────────────
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(exist_ok=True)
+
+log_format = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(logging.Formatter(log_format))
+
+file_handler = TimedRotatingFileHandler(
+    filename=LOG_DIR / "meridian-agent.log",
+    when="midnight",
+    interval=1,
+    backupCount=30,
+    encoding="utf-8",
+)
+file_handler.suffix = "%Y-%m-%d"
+file_handler.setFormatter(logging.Formatter(log_format))
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    handlers=[console_handler, file_handler],
 )
+
 logger = logging.getLogger("meridian.agent")
+# ───────────────────────────────────────────────────────────────────────────────
 
 
 class MeridianAgent(Agent):

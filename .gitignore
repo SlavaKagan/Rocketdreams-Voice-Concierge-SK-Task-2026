@@ -37,3 +37,9 @@ backend/.env
 # Agent
 agent/venv/
 agent/.env
+
+# Logs
+logs/
+*.log
+backend/logs/
+agent/logs/
