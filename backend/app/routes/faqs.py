@@ -1,85 +1,41 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
-from typing import Optional
 from app.core.database import get_db
-from app.models.models import FAQItem
-from app.core.config import settings
-from openai import OpenAI
+from app.schemas.faq import FAQCreate, FAQUpdate, FAQResponse
+from app.services.embedding import get_embedding
+from app.repositories import faq as faq_repo
+from typing import List
 
-router = APIRouter()
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
+router = APIRouter(prefix="/api", tags=["FAQs"])
+logger = logging.getLogger("meridian.routes.faqs")
 
-def get_embedding(text: str) -> list:
-    response = client.embeddings.create(
-        input=text,
-        model="text-embedding-ada-002"
-    )
-    return response.data[0].embedding
-
-class FAQCreate(BaseModel):
-    question: str
-    answer: str
-    category: Optional[str] = None
-
-class FAQUpdate(BaseModel):
-    question: Optional[str] = None
-    answer: Optional[str] = None
-    category: Optional[str] = None
-
-@router.get("/faqs")
+@router.get("/faqs", response_model=List[FAQResponse])
 def get_faqs(db: Session = Depends(get_db)):
-    faqs = db.query(FAQItem).all()
-    return [
-        {
-            "id": f.id,
-            "question": f.question,
-            "answer": f.answer,
-            "category": f.category,
-            "created_at": f.created_at
-        }
-        for f in faqs
-    ]
+    return faq_repo.get_all(db)
 
-@router.post("/faqs")
-def create_faq(faq: FAQCreate, db: Session = Depends(get_db)):
-    embedding = get_embedding(faq.question + " " + faq.answer)
-    item = FAQItem(
-        question=faq.question,
-        answer=faq.answer,
-        category=faq.category,
-        embedding=embedding
-    )
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-    return {"id": item.id, "question": item.question, "answer": item.answer}
+@router.post("/faqs", response_model=FAQResponse, status_code=201)
+def create_faq(body: FAQCreate, db: Session = Depends(get_db)):
+    embedding = get_embedding(body.question + " " + body.answer)
+    return faq_repo.create(db, body.question, body.answer, body.category, embedding)
 
-@router.put("/faqs/{faq_id}")
-def update_faq(faq_id: int, faq: FAQUpdate, db: Session = Depends(get_db)):
-    item = db.query(FAQItem).filter(FAQItem.id == faq_id).first()
+@router.put("/faqs/{faq_id}", response_model=FAQResponse)
+def update_faq(faq_id: int, body: FAQUpdate, db: Session = Depends(get_db)):
+    item = faq_repo.get_by_id(db, faq_id)
     if not item:
         raise HTTPException(status_code=404, detail="FAQ not found")
 
-    if faq.question:
-        item.question = faq.question
-    if faq.answer:
-        item.answer = faq.answer
-    if faq.category:
-        item.category = faq.category
+    new_embedding = None
+    if body.question or body.answer:
+        q = body.question or item.question
+        a = body.answer or item.answer
+        new_embedding = get_embedding(q + " " + a)
 
-    # Re-generate embedding if question or answer changed
-    if faq.question or faq.answer:
-        item.embedding = get_embedding(item.question + " " + item.answer)
+    return faq_repo.update(db, item, body.question, body.answer, body.category, new_embedding)
 
-    db.commit()
-    return {"id": item.id, "question": item.question, "answer": item.answer}
-
-@router.delete("/faqs/{faq_id}")
+@router.delete("/faqs/{faq_id}", status_code=204)
 def delete_faq(faq_id: int, db: Session = Depends(get_db)):
-    item = db.query(FAQItem).filter(FAQItem.id == faq_id).first()
+    item = faq_repo.get_by_id(db, faq_id)
     if not item:
         raise HTTPException(status_code=404, detail="FAQ not found")
-    db.delete(item)
-    db.commit()
-    return {"deleted": True}
+    faq_repo.delete(db, item)
