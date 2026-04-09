@@ -32,3 +32,6 @@ VOICES = {
         "description": "Female, American, calm and reassuring. Sophisticated and clear."
     },
 }
+
+# Playground
+PLAYGROUND_ROOM = "meridian-playground"

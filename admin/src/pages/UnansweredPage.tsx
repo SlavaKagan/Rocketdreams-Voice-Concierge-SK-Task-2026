@@ -1,9 +1,7 @@
 import { useState } from "react";
 import type { UnansweredQuestion } from "../types";
 import { useUnanswered } from "../hooks/useUnanswered";
-import Button from "../components/ui/Button";
-import Badge from "../components/ui/Badge";
-import Modal from "../components/ui/Modal";
+import { Button, Badge, Modal } from "../components/ui";
 
 const CATEGORIES = [
   "General",
@@ -61,8 +59,7 @@ export default function UnansweredPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-medium">{q.question}</p>
                 <p className="text-gray-500 text-xs mt-1">
-                  First asked:{" "}
-                  {new Date(q.created_at).toLocaleDateString()}
+                  First asked: {new Date(q.created_at).toLocaleDateString()}
                 </p>
               </div>
               <Badge color={q.frequency > 3 ? "red" : "gray"}>

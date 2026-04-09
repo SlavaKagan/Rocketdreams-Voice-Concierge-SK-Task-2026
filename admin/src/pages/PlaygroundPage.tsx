@@ -8,9 +8,9 @@ import {
   DisconnectButton,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { getPlaygroundToken } from "../api/voice";
+import { getPlaygroundToken } from "../api/playground";
 import type { PlaygroundToken } from "../types";
-import Button from "../components/ui/Button";
+import { Button } from "../components/ui";
 
 function ConciergeChatUI() {
   const { state, audioTrack } = useVoiceAssistant();
@@ -35,8 +35,6 @@ function ConciergeChatUI() {
 
   return (
     <div className="flex flex-col items-center justify-between h-full py-8 px-6">
-
-      {/* Status */}
       <div className="text-center">
         <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">
           Concierge Status
@@ -46,7 +44,6 @@ function ConciergeChatUI() {
         </p>
       </div>
 
-      {/* Visualizer */}
       <div className="w-full max-w-sm">
         <BarVisualizer
           state={state}
@@ -58,7 +55,6 @@ function ConciergeChatUI() {
         />
       </div>
 
-      {/* Instructions */}
       <p className="text-gray-500 text-sm text-center max-w-xs">
         {state === "listening"
           ? "Go ahead, ask your question..."
@@ -67,7 +63,6 @@ function ConciergeChatUI() {
           : "The concierge is ready for your question"}
       </p>
 
-      {/* Controls */}
       <div className="flex flex-col items-center gap-4 w-full max-w-xs">
         <VoiceAssistantControlBar />
         <DisconnectButton>
@@ -76,7 +71,6 @@ function ConciergeChatUI() {
           </button>
         </DisconnectButton>
       </div>
-
     </div>
   );
 }
@@ -105,7 +99,6 @@ export default function PlaygroundPage() {
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-white">Playground</h1>
@@ -118,7 +111,6 @@ export default function PlaygroundPage() {
         </p>
       </div>
 
-      {/* Not connected */}
       {!session ? (
         <div
           className="bg-dark-700 border border-dark-600 rounded-lg flex flex-col items-center justify-center gap-6 p-12"
@@ -148,7 +140,6 @@ export default function PlaygroundPage() {
           </Button>
         </div>
       ) : (
-        /* Connected */
         <div
           className="bg-dark-700 border border-gold-500/30 rounded-lg overflow-hidden"
           style={{ height: "60vh" }}

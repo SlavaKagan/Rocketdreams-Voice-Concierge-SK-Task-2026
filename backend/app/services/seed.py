@@ -1,17 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.models import FAQItem, VoiceConfig
 from app.core.database import SessionLocal
-from openai import OpenAI
-from app.core.config import settings
-
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
-
-def get_embedding(text: str) -> list:
-    response = client.embeddings.create(
-        input=text,
-        model="text-embedding-ada-002"
-    )
-    return response.data[0].embedding
+from app.services.embedding import get_embedding
 
 FAQ_DATA = [
     # General

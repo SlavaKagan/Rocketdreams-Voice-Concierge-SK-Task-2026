@@ -52,7 +52,7 @@ async def entrypoint(ctx: JobContext):
 
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
-    active_voice_id = get_active_voice_id()
+    active_voice_id = await get_active_voice_id()
 
     session = AgentSession(
         stt=deepgram.STT(),

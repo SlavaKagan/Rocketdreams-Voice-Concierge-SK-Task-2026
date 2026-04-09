@@ -17,12 +17,14 @@ export function useUnanswered() {
       queryClient.invalidateQueries({ queryKey: ["unanswered"] });
       queryClient.invalidateQueries({ queryKey: ["faqs"] });
     },
+    onError: (error) => console.error("Failed to convert question:", error),
   });
 
   const dismiss = useMutation({
     mutationFn: (id: number) => dismissQuestion(id),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["unanswered"] }),
+    onError: (error) => console.error("Failed to dismiss question:", error),
   });
 
   return { ...query, convert, dismiss };

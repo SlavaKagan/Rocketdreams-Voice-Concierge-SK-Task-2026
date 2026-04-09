@@ -2,7 +2,6 @@ import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.models.models import FAQItem
-from app.core.constants import EMBEDDING_DIMENSIONS
 
 logger = logging.getLogger("meridian.repository.faq")
 

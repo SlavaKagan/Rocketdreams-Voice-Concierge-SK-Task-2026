@@ -1,6 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
+
+class SchemaBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
 class FAQCreate(BaseModel):
     question: str
@@ -12,12 +15,9 @@ class FAQUpdate(BaseModel):
     answer: Optional[str] = None
     category: Optional[str] = None
 
-class FAQResponse(BaseModel):
+class FAQResponse(SchemaBase):
     id: int
     question: str
     answer: str
     category: Optional[str]
     created_at: datetime
-
-    class Config:
-        from_attributes = True

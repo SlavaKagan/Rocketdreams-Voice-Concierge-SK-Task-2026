@@ -37,14 +37,14 @@ async def search_faq(query: str) -> str:
         return "NO_MATCH"
 
 
-def get_active_voice_id() -> str:
+async def get_active_voice_id() -> str:
     """
     Fetch the currently active ElevenLabs voice ID from the backend.
     Falls back to default if unavailable.
     """
     try:
-        with httpx.Client() as client:
-            response = client.get(
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
                 f"{config.BACKEND_URL}/api/voices",
                 timeout=5.0
             )

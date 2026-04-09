@@ -2,14 +2,14 @@ import logging
 from fastapi import APIRouter
 from livekit.api import AccessToken, VideoGrants, LiveKitAPI, CreateAgentDispatchRequest
 from app.core.config import settings
+from app.core.constants import PLAYGROUND_ROOM
 
 router = APIRouter(prefix="/api", tags=["Playground"])
 logger = logging.getLogger("meridian.routes.playground")
 
-PLAYGROUND_ROOM = "meridian-playground"
-
 @router.get("/playground/token")
 async def get_playground_token():
+    """Generate a LiveKit access token and dispatch agent for the admin playground."""
     token = (
         AccessToken(
             api_key=settings.LIVEKIT_API_KEY,
@@ -35,11 +35,11 @@ async def get_playground_token():
             api_secret=settings.LIVEKIT_API_SECRET,
         ) as lk:
             await lk.agent_dispatch.create_dispatch(
-    CreateAgentDispatchRequest(
-        room=PLAYGROUND_ROOM,
-        agent_name="",
-    )
-)
+                CreateAgentDispatchRequest(
+                    room=PLAYGROUND_ROOM,
+                    agent_name="",
+                )
+            )
             logger.info(f"Agent dispatched to room: {PLAYGROUND_ROOM}")
     except Exception as e:
         logger.warning(f"Agent dispatch failed: {e}")
