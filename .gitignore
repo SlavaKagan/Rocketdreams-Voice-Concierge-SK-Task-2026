@@ -23,3 +23,17 @@ dist/
 
 # DB
 *.sqlite3
+
+# Admin
+admin/node_modules/
+admin/dist/
+admin/.env
+admin/.env.local
+
+# Backend
+backend/venv/
+backend/.env
+
+# Agent
+agent/venv/
+agent/.env
