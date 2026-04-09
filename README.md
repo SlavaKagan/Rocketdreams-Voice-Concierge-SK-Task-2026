@@ -89,6 +89,7 @@ Operational maturity. containerization is a natural fit. Single-command startup 
 | 10 | GET | /api/voices | List voice options + active voice
 | 11 | PUT | /api/voices/active | Set active voice
 | 12 | GET | /api/playground/token | Generate LiveKit token + dispatch agent
+| 13 | GET | /api/voices/{voice_id}/preview | Stream TTS audio preview
 
 ## 🎙️ Voice Options
 | ID | Name | Description |

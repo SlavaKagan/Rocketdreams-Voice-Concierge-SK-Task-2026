@@ -38,3 +38,23 @@ def test_voice_names(client, db):
     assert "Sofia" in names
     assert "Marcus" in names
     assert "Elena" in names
+
+def test_preview_voice(client, mocker):
+    mock_audio = b"fake_audio_bytes"
+
+    mocker.patch(
+        "app.routes.voice.ElevenLabs",
+        return_value=mocker.MagicMock(
+            text_to_speech=mocker.MagicMock(
+                convert=mocker.MagicMock(return_value=iter([mock_audio]))
+            )
+        )
+    )
+
+    response = client.get("/api/voices/1/preview")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/mpeg"
+
+def test_preview_invalid_voice(client):
+    response = client.get("/api/voices/99/preview")
+    assert response.status_code == 404
