@@ -1,4 +1,4 @@
-import { useVoice } from "../hooks/useVoice";
+import { useVoice } from "../hooks";
 import { Badge, Button } from "../components/ui";
 import type { VoiceOption } from "../types";
 

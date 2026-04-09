@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from app.schemas.faq import SchemaBase
+from app.schemas.base import SchemaBase
 
 class UnansweredResponse(SchemaBase):
     id: int

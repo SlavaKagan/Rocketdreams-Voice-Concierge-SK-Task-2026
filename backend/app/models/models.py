@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, func
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from pgvector.sqlalchemy import Vector
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 class FAQItem(Base):
     __tablename__ = "faq_items"

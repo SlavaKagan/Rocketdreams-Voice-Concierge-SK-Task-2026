@@ -19,7 +19,7 @@ def search_faq(request: SearchRequest, db: Session = Depends(get_db)):
 
     if result:
         row, similarity = result
-        if similarity >= request.threshold:
+        if similarity >= SIMILARITY_THRESHOLD:
             logger.info(f"Match found: similarity={similarity:.3f} faq='{row.question}'")
             return SearchResponse(
                 found=True,

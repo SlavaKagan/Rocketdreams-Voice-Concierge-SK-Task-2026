@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FAQItem, FAQCreate, FAQUpdate } from "../types";
-import { useFAQs } from "../hooks/useFAQs";
+import { useFAQs } from "../hooks";
 import { Button, Modal } from "../components/ui";
 import FAQForm from "../components/FAQForm";
 

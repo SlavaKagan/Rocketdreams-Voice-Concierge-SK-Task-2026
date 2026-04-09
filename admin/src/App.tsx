@@ -1,10 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Layout from "./components/Layout";
-import FAQsPage from "./pages/FAQsPage";
-import UnansweredPage from "./pages/UnansweredPage";
-import VoicePage from "./pages/VoicePage";
-import PlaygroundPage from "./pages/PlaygroundPage";
+import { FAQsPage, UnansweredPage, VoicePage, PlaygroundPage } from "./pages";
 
 const queryClient = new QueryClient({
   defaultOptions: {

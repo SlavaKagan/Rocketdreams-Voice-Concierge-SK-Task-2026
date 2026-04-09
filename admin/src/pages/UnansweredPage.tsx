@@ -1,18 +1,8 @@
 import { useState } from "react";
 import type { UnansweredQuestion } from "../types";
-import { useUnanswered } from "../hooks/useUnanswered";
+import { useUnanswered } from "../hooks";
 import { Button, Badge, Modal } from "../components/ui";
-
-const CATEGORIES = [
-  "General",
-  "Gaming",
-  "Dining",
-  "Accommodations",
-  "Bars",
-  "Entertainment",
-  "Events",
-  "Partners",
-];
+import { FAQ_CATEGORIES } from "../constants";
 
 export default function UnansweredPage() {
   const { data: questions = [], isLoading, convert, dismiss } = useUnanswered();
@@ -106,7 +96,7 @@ export default function UnansweredPage() {
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-dark-600 border border-dark-500 rounded px-3 py-2 text-white text-sm"
               >
-                {CATEGORIES.map((c) => (
+                {FAQ_CATEGORIES.map((c) => (
                   <option key={c}>{c}</option>
                 ))}
               </select>

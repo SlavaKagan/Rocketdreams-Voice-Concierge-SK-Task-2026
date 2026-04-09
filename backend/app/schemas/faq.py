@@ -1,9 +1,7 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
-
-class SchemaBase(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+from app.schemas.base import SchemaBase
 
 class FAQCreate(BaseModel):
     question: str
