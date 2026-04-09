@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { FAQItem, FAQCreate, FAQUpdate } from "../types";
 import { useFAQs } from "../hooks/useFAQs";
-import { Button, Badge, Modal } from "../components/ui";
-import FAQForm, { type FAQFormData } from "../components/FAQForm";
+import { Button, Modal } from "../components/ui";
+import FAQForm from "../components/FAQForm";
 
 type ModalState =
   | { mode: "create" }
