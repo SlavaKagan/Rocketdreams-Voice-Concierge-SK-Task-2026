@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import init_db
 from app.core.logging import setup_logging
-from app.routes import faqs, unanswered, voice, search
+from app.routes import register_routers
 
 setup_logging()
 
@@ -24,10 +24,7 @@ app.add_middleware(
 def on_startup():
     init_db()
 
-app.include_router(search.router)
-app.include_router(faqs.router)
-app.include_router(unanswered.router)
-app.include_router(voice.router)
+register_routers(app)
 
 @app.get("/health", tags=["Health"])
 def health():
