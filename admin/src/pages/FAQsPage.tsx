@@ -2,7 +2,6 @@ import { useState } from "react";
 import type { FAQItem, FAQCreate, FAQUpdate } from "../types";
 import { useFAQs } from "../hooks/useFAQs";
 import Button from "../components/ui/Button";
-import Badge from "../components/ui/Badge";
 import Modal from "../components/ui/Modal";
 
 const CATEGORIES = [
