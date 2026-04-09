@@ -1,9 +1,30 @@
+import { useState } from "react";
 import { useVoice } from "../hooks";
 import { Badge, Button } from "../components/ui";
+import { previewVoice } from "../api/voice";
 import type { VoiceOption } from "../types";
 
 export default function VoicePage() {
   const { data, isLoading, setVoice } = useVoice();
+  const [previewingId, setPreviewingId] = useState<number | null>(null);
+
+  const handlePreview = async (voice: VoiceOption) => {
+    if (previewingId === voice.id) return;
+    setPreviewingId(voice.id);
+    try {
+      const blob = await previewVoice(voice.id);
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.play();
+      audio.onended = () => {
+        setPreviewingId(null);
+        URL.revokeObjectURL(url);
+      };
+    } catch (e) {
+      console.error("Preview failed:", e);
+      setPreviewingId(null);
+    }
+  };
 
   if (isLoading) return <p className="text-gray-500">Loading...</p>;
 
@@ -19,6 +40,8 @@ export default function VoicePage() {
       <div className="grid grid-cols-1 gap-4 max-w-2xl">
         {data?.voices.map((voice: VoiceOption) => {
           const isActive = voice.id === data.active_voice_id;
+          const isPreviewing = previewingId === voice.id;
+
           return (
             <div
               key={voice.id}
@@ -33,15 +56,29 @@ export default function VoicePage() {
                 </div>
                 <p className="text-gray-400 text-sm">{voice.description}</p>
               </div>
-              {!isActive && (
+
+              <div className="flex gap-2 shrink-0">
+                {/* Preview button */}
                 <Button
                   variant="ghost"
-                  onClick={() => setVoice.mutate(voice.id)}
-                  disabled={setVoice.isPending}
+                  className="text-xs py-1 px-3"
+                  onClick={() => handlePreview(voice)}
+                  disabled={isPreviewing}
                 >
-                  Select
+                  {isPreviewing ? "▶ Playing..." : "▶ Preview"}
                 </Button>
-              )}
+
+                {/* Select button */}
+                {!isActive && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => setVoice.mutate(voice.id)}
+                    disabled={setVoice.isPending}
+                  >
+                    Select
+                  </Button>
+                )}
+              </div>
             </div>
           );
         })}
