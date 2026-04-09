@@ -1,7 +1,7 @@
 # Rocketdreams System- Software Engineer Interview Task (2026) - Slava Kagan
 
 ## -- DEMO --
-[![Watch Demo](https://img.shields.io/badge/Watch-Demo%20Video-blue)]https://bit.ly/Odysight-demo <br />
+[![Watch Demo](https://img.shields.io/badge/Watch-Demo%20Video-blue)]https://bit.ly/Rocketdreams-demo <br />
 <br /> ![Demo](Screenshots/playground.png)
 
 ## -- Overview --

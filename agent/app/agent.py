@@ -72,17 +72,25 @@ class MeridianAgent(Agent):
 
 async def entrypoint(ctx: JobContext):
     """Main entrypoint for each LiveKit job (one per guest session)."""
-    LOG_DIR.mkdir(exist_ok=True)  # Ensure log dir exists in subprocess
+    LOG_DIR.mkdir(exist_ok=True)
     logger.info(f"New session started: room={ctx.room.name}")
 
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
     active_voice_id = await get_active_voice_id()
+    logger.info(f"Using voice: {active_voice_id}")
+
+    # Fallback to default voice if active one fails
+    try:
+        tts = elevenlabs.TTS(voice_id=active_voice_id)
+    except Exception as e:
+        logger.warning(f"TTS init failed with voice {active_voice_id}, falling back: {e}")
+        tts = elevenlabs.TTS(voice_id=config.DEFAULT_VOICE_ELEVENLABS_ID)
 
     session = AgentSession(
         stt=deepgram.STT(),
         llm=openai.LLM(model=config.LLM_MODEL),
-        tts=elevenlabs.TTS(voice_id=active_voice_id),
+        tts=tts,
         vad=silero.VAD.load(),
     )
 
@@ -94,7 +102,6 @@ async def entrypoint(ctx: JobContext):
     )
 
     await session.generate_reply(instructions=GREETING)
-
     logger.info("Agent session ready")
 
 
