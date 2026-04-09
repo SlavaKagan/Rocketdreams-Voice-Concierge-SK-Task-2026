@@ -50,3 +50,9 @@ export interface SearchResponse {
   category?: string;
   similarity?: number;
 }
+
+export interface PlaygroundToken {
+  token: string;
+  url: string;
+  room: string;
+}

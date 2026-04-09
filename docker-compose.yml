@@ -34,6 +34,23 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  seeder:
+    build: ./backend
+    container_name: meridian_seeder
+    command: python -m app.services.seed
+    environment:
+      DATABASE_URL: postgresql://meridian:meridian@db:5432/meridian_db
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: "no"
 
   agent:
     build: ./agent
@@ -44,10 +61,12 @@ services:
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY}
+      ELEVEN_API_KEY: ${ELEVEN_API_KEY}
       DEEPGRAM_API_KEY: ${DEEPGRAM_API_KEY}
       BACKEND_URL: http://backend:8000
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
   admin:
     build: ./admin

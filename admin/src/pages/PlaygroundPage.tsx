@@ -1,6 +1,111 @@
+import { useState, useCallback } from "react";
+import {
+  LiveKitRoom,
+  useVoiceAssistant,
+  BarVisualizer,
+  VoiceAssistantControlBar,
+  RoomAudioRenderer,
+  DisconnectButton,
+} from "@livekit/components-react";
+import "@livekit/components-styles";
+import { getPlaygroundToken } from "../api/voice";
+import type { PlaygroundToken } from "../types";
+import Button from "../components/ui/Button";
+
+function ConciergeChatUI() {
+  const { state, audioTrack } = useVoiceAssistant();
+
+  const stateLabels: Record<string, string> = {
+    disconnected: "Disconnected",
+    connecting: "Connecting...",
+    initializing: "Initializing...",
+    listening: "Listening...",
+    thinking: "Thinking...",
+    speaking: "Speaking...",
+  };
+
+  const stateColors: Record<string, string> = {
+    disconnected: "text-gray-500",
+    connecting: "text-yellow-400",
+    initializing: "text-yellow-400",
+    listening: "text-green-400",
+    thinking: "text-blue-400",
+    speaking: "text-gold-400",
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-between h-full py-8 px-6">
+
+      {/* Status */}
+      <div className="text-center">
+        <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">
+          Concierge Status
+        </p>
+        <p className={`text-lg font-semibold ${stateColors[state] ?? "text-gray-400"}`}>
+          {stateLabels[state] ?? state}
+        </p>
+      </div>
+
+      {/* Visualizer */}
+      <div className="w-full max-w-sm">
+        <BarVisualizer
+          state={state}
+          trackRef={audioTrack}
+          className="w-full"
+          style={{ height: "80px" }}
+          barCount={24}
+          options={{ minHeight: 4 }}
+        />
+      </div>
+
+      {/* Instructions */}
+      <p className="text-gray-500 text-sm text-center max-w-xs">
+        {state === "listening"
+          ? "Go ahead, ask your question..."
+          : state === "speaking"
+          ? "The concierge is speaking..."
+          : "The concierge is ready for your question"}
+      </p>
+
+      {/* Controls */}
+      <div className="flex flex-col items-center gap-4 w-full max-w-xs">
+        <VoiceAssistantControlBar />
+        <DisconnectButton>
+          <button className="w-full py-2 px-4 rounded bg-red-600/20 text-red-400 border border-red-600/30 hover:bg-red-600/30 transition-all text-sm font-medium">
+            End Conversation
+          </button>
+        </DisconnectButton>
+      </div>
+
+    </div>
+  );
+}
+
 export default function PlaygroundPage() {
+  const [session, setSession] = useState<PlaygroundToken | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleConnect = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const token = await getPlaygroundToken();
+      setSession(token);
+    } catch {
+      setError("Failed to connect. Make sure the backend is running.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const handleDisconnect = useCallback(() => {
+    setSession(null);
+  }, []);
+
   return (
     <div>
+      {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-white">Playground</h1>
@@ -13,17 +118,65 @@ export default function PlaygroundPage() {
         </p>
       </div>
 
-      <div
-        className="bg-dark-700 border border-dark-600 rounded-lg overflow-hidden"
-        style={{ height: "70vh" }}
-      >
-        <iframe
-          src="https://agents-playground.livekit.io"
-          className="w-full h-full"
-          allow="microphone; camera; autoplay"
-          title="Meridian Voice Concierge Playground"
-        />
-      </div>
+      {/* Not connected */}
+      {!session ? (
+        <div
+          className="bg-dark-700 border border-dark-600 rounded-lg flex flex-col items-center justify-center gap-6 p-12"
+          style={{ height: "60vh" }}
+        >
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-full bg-gold-500/10 border border-gold-500/20 flex items-center justify-center mb-4 mx-auto">
+              <span className="text-2xl">🎙️</span>
+            </div>
+            <p className="text-white text-lg font-medium mb-2">
+              Meridian Voice Concierge
+            </p>
+            <p className="text-gray-400 text-sm max-w-sm">
+              Start a conversation to test the concierge with the current FAQ
+              knowledge base and active voice configuration.
+            </p>
+          </div>
+
+          {error && (
+            <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded px-4 py-2">
+              {error}
+            </p>
+          )}
+
+          <Button onClick={handleConnect} disabled={loading} className="px-8">
+            {loading ? "Connecting..." : "Start Conversation"}
+          </Button>
+        </div>
+      ) : (
+        /* Connected */
+        <div
+          className="bg-dark-700 border border-gold-500/30 rounded-lg overflow-hidden"
+          style={{ height: "60vh" }}
+        >
+          <div className="bg-dark-800 border-b border-dark-600 px-6 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-white text-sm font-medium">
+                Connected to Meridian Concierge
+              </span>
+            </div>
+            <span className="text-gray-500 text-xs">Room: {session.room}</span>
+          </div>
+
+          <LiveKitRoom
+            token={session.token}
+            serverUrl={session.url}
+            connect={true}
+            audio={true}
+            video={false}
+            onDisconnected={handleDisconnect}
+            className="h-full"
+          >
+            <RoomAudioRenderer />
+            <ConciergeChatUI />
+          </LiveKitRoom>
+        </div>
+      )}
     </div>
   );
 }
