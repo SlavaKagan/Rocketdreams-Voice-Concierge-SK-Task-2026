@@ -1,14 +1,15 @@
 import logging
 from fastapi import APIRouter
-from livekit.api import AccessToken, VideoGrants
+from livekit.api import AccessToken, VideoGrants, LiveKitAPI, CreateAgentDispatchRequest
 from app.core.config import settings
 
 router = APIRouter(prefix="/api", tags=["Playground"])
 logger = logging.getLogger("meridian.routes.playground")
 
+PLAYGROUND_ROOM = "meridian-playground"
+
 @router.get("/playground/token")
-def get_playground_token():
-    """Generate a LiveKit access token for the admin playground."""
+async def get_playground_token():
     token = (
         AccessToken(
             api_key=settings.LIVEKIT_API_KEY,
@@ -19,7 +20,7 @@ def get_playground_token():
         .with_grants(
             VideoGrants(
                 room_join=True,
-                room="meridian-playground",
+                room=PLAYGROUND_ROOM,
                 can_publish=True,
                 can_subscribe=True,
             )
@@ -27,9 +28,25 @@ def get_playground_token():
         .to_jwt()
     )
 
+    try:
+        async with LiveKitAPI(
+            url=settings.LIVEKIT_URL,
+            api_key=settings.LIVEKIT_API_KEY,
+            api_secret=settings.LIVEKIT_API_SECRET,
+        ) as lk:
+            await lk.agent_dispatch.create_dispatch(
+    CreateAgentDispatchRequest(
+        room=PLAYGROUND_ROOM,
+        agent_name="",
+    )
+)
+            logger.info(f"Agent dispatched to room: {PLAYGROUND_ROOM}")
+    except Exception as e:
+        logger.warning(f"Agent dispatch failed: {e}")
+
     logger.info("Generated playground token for admin")
     return {
         "token": token,
         "url": settings.LIVEKIT_URL,
-        "room": "meridian-playground",
+        "room": PLAYGROUND_ROOM,
     }
