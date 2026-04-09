@@ -16,7 +16,7 @@ VOICES = {
     2: {
         "id": 2,
         "name": "Sofia",
-        "elevenlabs_id": "rhS7yjXTU4uIlRxXhNW7",
+        "elevenlabs_id": "SUt4lKV5Yg2QPF7Bs3Ae",
         "description": "Female, friendly, subtle European accent. Welcoming and elegant."
     },
     3: {
