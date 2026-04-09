@@ -24,23 +24,25 @@ Core Goals
 4. git clone ```https://github.com/SlavaKagan/Rocketdreams-Voice-Concierge-SK-Task-2026.git```
    cd Rocketdreams-Voice-Concierge-SK-Task-2026
 5. Create a root .env file with your own API keys:
-   OPENAI_API_KEY=...
-   LIVEKIT_URL=wss://...
-   LIVEKIT_API_KEY=...
-   LIVEKIT_API_SECRET=...
-   ELEVENLABS_API_KEY=...
-   ELEVEN_API_KEY=...
-   DEEPGRAM_API_KEY=...
+   OPENAI_API_KEY=...         # OpenAI API key for embeddings + LLM
+   LIVEKIT_URL=wss://...      # LiveKit WebSocket URL
+   LIVEKIT_API_KEY=...        # LiveKit API key
+   LIVEKIT_API_SECRET=...     # LiveKit API secret
+   ELEVENLABS_API_KEY=...     # ElevenLabs API key
+   ELEVEN_API_KEY=...         # ElevenLabs API key (plugin alias)
+   DEEPGRAM_API_KEY=...       # Deepgram API key for STT
 6. From the project root, run:
 ```docker compose up --build```
-7. Access the Site-
+7. This will automatically:
+   * Start PostgreSQL with pgvector
+   * Start the FastAPI backend
+   * Run the seed script (skips if already seeded)
+   * Start the LiveKit voice agent
+   * Start the React admin panel
+8. Access the Site-
 Open a browser and go to: ```http://localhost:3000```
 The client app should be running and connected to the container.
-8. At the end of use, stop the site- ```docker-compose down``` or just shutdown the terminal.
-
-## -- System Architecture --
-**Cameras → Processing Unit (PU) → App** <br /> <br />
-![System Architecture Diagram](Screenshots/System%20Architecture.png)
+9. At the end of use, stop the site- ```docker-compose down``` or just shutdown the terminal.
 
 ## -- Tech Stack --
 **GitHub repository:** ```https://github.com/SlavaKagan/Rocketdreams-Voice-Concierge-SK-Task-2026``` <br />
@@ -62,9 +64,9 @@ Utility-first CSS with zero runtime overhead. Chosen for rapid development of a 
 
 **Combination of the stack:**  <br />
 **```Docker Compose```**- one command <br />
-Operational maturity. A system like this would run on an edge device (the PU itself), so containerization is a natural fit. Single-command startup also respects the reviewer's time. ``` "docker compose up" ``` <br />
+Operational maturity. containerization is a natural fit. Single-command startup also respects the reviewer's time. ``` "docker compose up" ``` <br />
 
-```Frontend → http://localhost:3000 ``` <br />
+```Frontend-Admin Panel → http://localhost:3000 ``` <br />
 ```Backend API → http://localhost:8000 ```<br />
 ```API Docs (Swagger) → http://localhost:8000/docs ``` <br />
 
@@ -73,13 +75,30 @@ Operational maturity. A system like this would run on an edge device (the PU its
 ## -- Architecture rationale --
 *REST API endpoints- HTTP Methods <br />
 
-**Cameras** <br/>
 | # | Method | Endpoint | Description |
 |---|--------|----------|-------------|
-| 1 | GET | /cameras | List all cameras 
-| 2 | GET | /cameras/{id} | Get single camera details
-| 3 | PATCH | /cameras/{id}/settings | Update camera parameters (gain, exposure, rotation)
-| 4 | GET | /cameras/{id}/stream | WebSocket- live stream frames
+| 1 | GET | /health | Health check 
+| 2 | POST | /api/search | Semantic FAQ search
+| 3 | GET | /api/faqs | List all FAQ items
+| 4 | POST | /api/faqs | Create a new FAQ
+| 5 | PUT | /api/faqs/{id} | Update a FAQ
+| 6 | DELETE | /api/faqs/{id} | Delete a FAQ
+| 7 | GET | /api/unanswered | List unanswered questions
+| 8 | POST | /api/unanswered/{id}/convert | Convert to FAQ
+| 9 | DELETE | /api/unanswered/{id}/dismiss | Dismiss a question
+| 10 | GET | /api/voices | List voice options + active voice
+| 11 | PUT | /api/voices/active | Set active voice
+| 12 | GET | /api/playground/token | Generate LiveKit token + dispatch agent
+
+## 🎙️ Voice Options
+| ID | Name | Description |
+|----|------|-------------|
+| 1 | James | Male, mature, warm British accent. Professional and refined. |
+| 2 | Sofia | Female, friendly, subtle European accent. Welcoming and elegant. |
+| 3 | Marcus | Male, American, confident and energetic. Modern and approachable. |
+| 4 | Elena | Female, American, calm and reassuring. Sophisticated and clear. |
+ 
+Voice changes take effect immediately for new conversations — no restart required.
 
 ## -- Tests Section --
 ```Vitest```- Test runner. <br>
