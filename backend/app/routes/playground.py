@@ -28,12 +28,20 @@ async def get_playground_token():
         .to_jwt()
     )
 
-    try:
-        async with LiveKitAPI(
-            url=settings.LIVEKIT_URL,
-            api_key=settings.LIVEKIT_API_KEY,
-            api_secret=settings.LIVEKIT_API_SECRET,
-        ) as lk:
+    async with LiveKitAPI(
+        url=settings.LIVEKIT_URL,
+        api_key=settings.LIVEKIT_API_KEY,
+        api_secret=settings.LIVEKIT_API_SECRET,
+    ) as lk:
+        # Delete existing room to kick out any lingering agents
+        try:
+            await lk.room.delete_room(room=PLAYGROUND_ROOM)
+            logger.info(f"Deleted existing room: {PLAYGROUND_ROOM}")
+        except Exception:
+            pass  # Room may not exist yet — that's fine
+
+        # Dispatch fresh agent
+        try:
             await lk.agent_dispatch.create_dispatch(
                 CreateAgentDispatchRequest(
                     room=PLAYGROUND_ROOM,
@@ -41,8 +49,8 @@ async def get_playground_token():
                 )
             )
             logger.info(f"Agent dispatched to room: {PLAYGROUND_ROOM}")
-    except Exception as e:
-        logger.warning(f"Agent dispatch failed: {e}")
+        except Exception as e:
+            logger.warning(f"Agent dispatch failed: {e}")
 
     logger.info("Generated playground token for admin")
     return {
