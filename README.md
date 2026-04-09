@@ -2,7 +2,7 @@
 
 ## -- DEMO --
 [![Watch Demo](https://img.shields.io/badge/Watch-Demo%20Video-blue)]https://bit.ly/Odysight-demo <br />
-<br /> ![Demo](Screenshots/dashboard-demo.png)
+<br /> ![Demo](Screenshots/playground.png)
 
 ## -- Overview --
 The Meridian Casino & Resort is a luxury destination in Las Vegas. <br />
