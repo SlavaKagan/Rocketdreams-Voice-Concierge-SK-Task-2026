@@ -1,9 +1,12 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class AgentSettings(BaseSettings):
+    model_config = ConfigDict(env_file=".env")
+    
     LIVEKIT_URL: str = ""
     LIVEKIT_API_KEY: str = ""
     LIVEKIT_API_SECRET: str = ""
@@ -21,8 +24,5 @@ class AgentSettings(BaseSettings):
         3: "ErXwobaYiN019PkySvjV",  # Marcus
         4: "EXAVITQu4vr4xnSDxMaL",  # Elena
     }
-
-    class Config:
-        env_file = ".env"
 
 config = AgentSettings()

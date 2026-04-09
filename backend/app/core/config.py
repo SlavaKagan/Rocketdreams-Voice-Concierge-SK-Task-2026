@@ -1,6 +1,9 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env")
+    
     # Database
     DATABASE_URL: str
 
@@ -17,8 +20,5 @@ class Settings(BaseSettings):
 
     # Deepgram
     DEEPGRAM_API_KEY: str = ""
-
-    class Config:
-        env_file = ".env"
 
 settings = Settings()
