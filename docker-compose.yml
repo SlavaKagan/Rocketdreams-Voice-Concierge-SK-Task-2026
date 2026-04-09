@@ -49,5 +49,13 @@ services:
     depends_on:
       - backend
 
+  admin:
+    build: ./admin
+    container_name: meridian_admin
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
