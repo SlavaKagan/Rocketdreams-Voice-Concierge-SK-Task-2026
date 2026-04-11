@@ -29,21 +29,22 @@ def find_active_by_text(db: Session, question: str) -> Optional[UnansweredQuesti
     return (
         db.query(UnansweredQuestion)
         .filter(
-            UnansweredQuestion.question == question,
+            UnansweredQuestion.question.ilike(question.strip()),
             UnansweredQuestion.dismissed == 0
         )
         .first()
     )
 
 def record(db: Session, question: str) -> UnansweredQuestion:
-    existing = find_active_by_text(db, question)
+    normalized = question.strip()
+    existing = find_active_by_text(db, normalized)
     if existing:
         existing.frequency += 1
         db.commit()
         logger.info(f"Incremented frequency for unanswered question id={existing.id} freq={existing.frequency}")
         return existing
 
-    item = UnansweredQuestion(question=question)
+    item = UnansweredQuestion(question=normalized)
     db.add(item)
     db.commit()
     db.refresh(item)

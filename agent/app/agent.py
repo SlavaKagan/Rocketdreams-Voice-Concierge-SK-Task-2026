@@ -5,6 +5,7 @@ from pathlib import Path
 from livekit.agents import (
     AutoSubscribe,
     JobContext,
+    JobRequest,
     WorkerOptions,
     cli,
     Agent,
@@ -43,6 +44,9 @@ logging.basicConfig(
 logger = logging.getLogger("meridian.agent")
 # ───────────────────────────────────────────────────────────────────────────────
 
+# Track active job — reject duplicates
+_active_job_id: str | None = None
+
 
 class MeridianAgent(Agent):
     """
@@ -70,40 +74,63 @@ class MeridianAgent(Agent):
         return await search_faq(query)
 
 
+async def request_fnc(req: JobRequest) -> None:
+    """Accept only one job at a time — reject duplicates."""
+    global _active_job_id
+    if _active_job_id is not None:
+        logger.warning(
+            f"Rejecting job {req.job.id} — already handling {_active_job_id}"
+        )
+        await req.reject()
+        return
+    await req.accept()
+
+
 async def entrypoint(ctx: JobContext):
     """Main entrypoint for each LiveKit job (one per guest session)."""
+    global _active_job_id
+    _active_job_id = ctx.job.id
     LOG_DIR.mkdir(exist_ok=True)
     logger.info(f"New session started: room={ctx.room.name}")
 
-    await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
-
-    active_voice_id = await get_active_voice_id()
-    logger.info(f"Using voice: {active_voice_id}")
-
-    # Fallback to default voice if active one fails
     try:
-        tts = elevenlabs.TTS(voice_id=active_voice_id)
-    except Exception as e:
-        logger.warning(f"TTS init failed with voice {active_voice_id}, falling back: {e}")
-        tts = elevenlabs.TTS(voice_id=config.DEFAULT_VOICE_ELEVENLABS_ID)
+        await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
-    session = AgentSession(
-        stt=deepgram.STT(),
-        llm=openai.LLM(model=config.LLM_MODEL),
-        tts=tts,
-        vad=silero.VAD.load(),
-    )
+        active_voice_id = await get_active_voice_id()
+        logger.info(f"Using voice: {active_voice_id}")
 
-    agent = MeridianAgent()
+        try:
+            tts = elevenlabs.TTS(voice_id=active_voice_id)
+        except Exception as e:
+            logger.warning(f"TTS init failed, falling back: {e}")
+            tts = elevenlabs.TTS(voice_id=config.DEFAULT_VOICE_ELEVENLABS_ID)
 
-    await session.start(
-        room=ctx.room,
-        agent=agent,
-    )
+        session = AgentSession(
+            stt=deepgram.STT(),
+            llm=openai.LLM(model=config.LLM_MODEL),
+            tts=tts,
+            vad=silero.VAD.load(),
+        )
 
-    await session.generate_reply(instructions=GREETING)
-    logger.info("Agent session ready")
+        agent = MeridianAgent()
+
+        await session.start(
+            room=ctx.room,
+            agent=agent,
+        )
+
+        await session.generate_reply(instructions=GREETING)
+        logger.info("Agent session ready")
+
+    finally:
+        _active_job_id = None
+        logger.info("Session ended, ready for new job")
 
 
 if __name__ == "__main__":
-    cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint))
+    cli.run_app(WorkerOptions(
+        entrypoint_fnc=entrypoint,
+        request_fnc=request_fnc,
+        num_idle_processes=1,
+        load_threshold=1.0,
+    ))

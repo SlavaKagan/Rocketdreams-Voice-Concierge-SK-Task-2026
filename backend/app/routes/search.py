@@ -22,7 +22,10 @@ def search_faq(request: Request, body: SearchRequest, db: Session = Depends(get_
     if result:
         row, similarity = result
         if similarity >= SIMILARITY_THRESHOLD:
-            logger.info(f"Match found: similarity={similarity:.3f} faq='{row.question}'")
+            logger.info(
+                f"Match found: similarity={similarity:.3f} "
+                f"faq='{row.question}'"
+            )
             return SearchResponse(
                 found=True,
                 question=row.question,
@@ -30,7 +33,16 @@ def search_faq(request: Request, body: SearchRequest, db: Session = Depends(get_
                 category=row.category,
                 similarity=similarity
             )
+        else:
+            # Log the closest miss — useful for threshold tuning
+            logger.info(
+                f"No match found for query='{body.query}' | "
+                f"Closest FAQ: '{row.question}' | "
+                f"Similarity: {similarity:.3f} | "
+                f"Threshold: {SIMILARITY_THRESHOLD}"
+            )
+    else:
+        logger.info(f"No FAQs in database to search against")
 
-    logger.info(f"No match found for query: '{body.query}'")
     unanswered_repo.record(db, body.query)
     return SearchResponse(found=False)

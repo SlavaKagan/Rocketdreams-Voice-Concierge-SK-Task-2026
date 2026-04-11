@@ -20,7 +20,7 @@ class AgentSettings(BaseSettings):
 
     VOICES: dict = {
         1: "pNInz6obpgDQGcFmaJgB",  # James
-        2: "21m00Tcm4TlvDq8ikWAM",  # Sofia
+        2: "SUt4lKV5Yg2QPF7Bs3Ae",  # Sofia
         3: "ErXwobaYiN019PkySvjV",  # Marcus
         4: "EXAVITQu4vr4xnSDxMaL",  # Elena
     }

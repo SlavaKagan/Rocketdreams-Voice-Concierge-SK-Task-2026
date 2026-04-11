@@ -46,3 +46,7 @@ agent/logs/
 
 # Make sure this line does NOT exist
 migrations/
+
+# Test database
+test.db
+backend/test.db

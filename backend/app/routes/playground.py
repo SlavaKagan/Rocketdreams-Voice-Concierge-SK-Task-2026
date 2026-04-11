@@ -1,6 +1,12 @@
 import logging
+import asyncio
 from fastapi import APIRouter
-from livekit.api import AccessToken, VideoGrants, LiveKitAPI, CreateAgentDispatchRequest
+from livekit.api import (
+    AccessToken,
+    VideoGrants,
+    LiveKitAPI,
+    CreateAgentDispatchRequest,
+)
 from app.core.config import settings
 from app.core.constants import PLAYGROUND_ROOM
 
@@ -33,14 +39,33 @@ async def get_playground_token():
         api_key=settings.LIVEKIT_API_KEY,
         api_secret=settings.LIVEKIT_API_SECRET,
     ) as lk:
-        # Delete existing room to kick out any lingering agents
+        # Step 1 — delete existing dispatches
+        try:
+            dispatches = await lk.agent_dispatch.list_dispatch(
+                room_name=PLAYGROUND_ROOM
+            )
+            logger.info(f"Found {len(dispatches)} existing dispatches")
+            for dispatch in dispatches:
+                try:
+                    await lk.agent_dispatch.delete_dispatch(
+                        dispatch_id=dispatch.id,
+                        room_name=PLAYGROUND_ROOM,
+                    )
+                    logger.info(f"Deleted dispatch: {dispatch.id}")
+                except Exception as e:
+                    logger.warning(f"Failed to delete dispatch {dispatch.id}: {e}")
+        except Exception as e:
+            logger.warning(f"No existing dispatches (room may not exist): {e}")
+
+        # Step 2 — delete room
         try:
             await lk.room.delete_room(room=PLAYGROUND_ROOM)
-            logger.info(f"Deleted existing room: {PLAYGROUND_ROOM}")
+            logger.info(f"Deleted room: {PLAYGROUND_ROOM}")
+            await asyncio.sleep(1)
         except Exception:
-            pass  # Room may not exist yet — that's fine
+            pass
 
-        # Dispatch fresh agent
+        # Step 3 — single dispatch
         try:
             await lk.agent_dispatch.create_dispatch(
                 CreateAgentDispatchRequest(

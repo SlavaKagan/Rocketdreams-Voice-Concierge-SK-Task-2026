@@ -15,6 +15,7 @@ class FAQItem(Base):
     embedding = Column(Vector(1536), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    deleted_at = Column(DateTime, nullable=True)  # None = active, set = soft deleted
 
 
 class UnansweredQuestion(Base):

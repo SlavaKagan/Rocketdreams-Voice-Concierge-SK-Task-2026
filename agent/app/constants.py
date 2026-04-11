@@ -3,3 +3,7 @@ HTTP_SEARCH_TIMEOUT = 10.0
 HTTP_VOICE_TIMEOUT = 5.0
 MAX_RETRIES = 3
 RETRY_DELAY = 1.0
+
+# ── Confidence Thresholds ──────────────────────────────────────────────────────
+HIGH_CONFIDENCE_THRESHOLD = 0.92
+MEDIUM_CONFIDENCE_THRESHOLD = 0.85

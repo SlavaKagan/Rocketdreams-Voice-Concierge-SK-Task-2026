@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
 import Layout from "./components/Layout";
 import { FAQsPage, UnansweredPage, VoicePage, PlaygroundPage } from "./pages";
 
@@ -26,6 +27,31 @@ export default function App() {
           </Route>
         </Routes>
       </BrowserRouter>
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: "#1a1a1a",
+            color: "#f5f5f5",
+            border: "1px solid #2a2a2a",
+            borderRadius: "8px",
+            fontSize: "14px",
+          },
+          success: {
+            iconTheme: {
+              primary: "#e6b800",
+              secondary: "#0a0a0a",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#0a0a0a",
+            },
+          },
+          duration: 3000,
+        }}
+      />
     </QueryClientProvider>
   );
 }

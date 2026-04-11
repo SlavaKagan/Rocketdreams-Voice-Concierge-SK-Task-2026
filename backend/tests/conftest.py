@@ -31,17 +31,17 @@ def override_get_db():
 def setup_database():
     Base.metadata.create_all(bind=engine)
     yield
+    # Teardown — drop all tables and remove test.db file
     Base.metadata.drop_all(bind=engine)
     engine.dispose()
     if os.path.exists("test.db"):
         try:
             os.remove("test.db")
         except PermissionError:
-            pass
+            pass  # Windows may lock the file briefly
 
 @pytest.fixture
 def client(setup_database):
-    # Patch init_db before app starts so it never touches PostgreSQL
     with patch("app.core.database.init_db", return_value=None):
         from app.main import app
         app.dependency_overrides[get_db] = override_get_db

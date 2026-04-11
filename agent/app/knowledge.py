@@ -2,7 +2,14 @@ import logging
 import asyncio
 import httpx
 from app.config import config
-from app.constants import MAX_RETRIES, RETRY_DELAY, HTTP_SEARCH_TIMEOUT, HTTP_VOICE_TIMEOUT
+from app.constants import (
+    MAX_RETRIES,
+    RETRY_DELAY,
+    HTTP_SEARCH_TIMEOUT,
+    HTTP_VOICE_TIMEOUT,
+    HIGH_CONFIDENCE_THRESHOLD,
+    MEDIUM_CONFIDENCE_THRESHOLD,
+)
 
 logger = logging.getLogger("meridian.knowledge")
 
@@ -10,8 +17,8 @@ logger = logging.getLogger("meridian.knowledge")
 async def search_faq(query: str) -> str:
     """
     Search the Meridian knowledge base for an answer to the guest's query.
-    Retries up to MAX_RETRIES times if the backend is temporarily unavailable.
-    Returns the answer string if found, or 'NO_MATCH' if not found.
+    Returns a formatted string with the answer and confidence level,
+    or 'NO_MATCH' if not found.
     """
     for attempt in range(MAX_RETRIES):
         try:
@@ -28,11 +35,23 @@ async def search_faq(query: str) -> str:
                 result = response.json()
 
                 if result.get("found"):
+                    similarity = result.get("similarity", 0)
+                    answer = result["answer"]
+
+                    # Give the LLM context about confidence level
+                    if similarity >= HIGH_CONFIDENCE_THRESHOLD:
+                        confidence = "HIGH_CONFIDENCE"
+                    elif similarity >= MEDIUM_CONFIDENCE_THRESHOLD:
+                        confidence = "MEDIUM_CONFIDENCE"
+                    else:
+                        confidence = "LOW_CONFIDENCE"
+
                     logger.info(
                         f"FAQ match found for query='{query}' "
-                        f"similarity={result.get('similarity', 0):.3f}"
+                        f"similarity={similarity:.3f} "
+                        f"confidence={confidence}"
                     )
-                    return result["answer"]
+                    return f"[{confidence}] {answer}"
 
                 logger.info(f"No FAQ match for query='{query}'")
                 return "NO_MATCH"

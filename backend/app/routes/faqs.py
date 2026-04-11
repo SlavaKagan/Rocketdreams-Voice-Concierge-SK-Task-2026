@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.core.database import get_db
 from app.schemas.faq import FAQCreate, FAQUpdate, FAQResponse
 from app.services.embedding import get_embedding
@@ -14,9 +14,10 @@ logger = logging.getLogger("meridian.routes.faqs")
 def get_faqs(
     skip: int = 0,
     limit: int = 100,
+    category: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    return faq_repo.get_all(db, skip=skip, limit=limit)
+    return faq_repo.get_all(db, skip=skip, limit=limit, category=category)
 
 @router.get("/faqs/count")
 def get_faqs_count(db: Session = Depends(get_db)):
@@ -47,3 +48,16 @@ def delete_faq(faq_id: int, db: Session = Depends(get_db)):
     if not item:
         raise HTTPException(status_code=404, detail="FAQ not found")
     faq_repo.delete(db, item)
+    
+@router.get("/faqs/deleted", response_model=List[FAQResponse])
+def get_deleted_faqs(db: Session = Depends(get_db)):
+    """View all soft-deleted FAQs."""
+    return faq_repo.get_deleted(db)
+
+@router.post("/faqs/{faq_id}/restore", response_model=FAQResponse)
+def restore_faq(faq_id: int, db: Session = Depends(get_db)):
+    """Restore a soft-deleted FAQ."""
+    item = faq_repo.restore(db, faq_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="FAQ not found or not deleted")
+    return item

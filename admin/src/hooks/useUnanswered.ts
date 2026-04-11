@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { getUnanswered, convertToFAQ, dismissQuestion } from "../api/unanswered";
 import type { ConvertToFAQRequest } from "../types";
 
@@ -16,15 +17,18 @@ export function useUnanswered() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["unanswered"] });
       queryClient.invalidateQueries({ queryKey: ["faqs"] });
+      toast.success("Question converted to FAQ");
     },
-    onError: (error) => console.error("Failed to convert question:", error),
+    onError: () => toast.error("Failed to convert question"),
   });
 
   const dismiss = useMutation({
     mutationFn: (id: number) => dismissQuestion(id),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["unanswered"] }),
-    onError: (error) => console.error("Failed to dismiss question:", error),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["unanswered"] });
+      toast.success("Question dismissed");
+    },
+    onError: () => toast.error("Failed to dismiss question"),
   });
 
   return { ...query, convert, dismiss };
