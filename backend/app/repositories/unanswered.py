@@ -1,21 +1,31 @@
 import logging
 from sqlalchemy.orm import Session
+from typing import Optional
 from app.models.models import UnansweredQuestion
 
 logger = logging.getLogger("meridian.repository.unanswered")
 
-def get_all_active(db: Session) -> list[UnansweredQuestion]:
+def get_all_active(db: Session, skip: int = 0, limit: int = 100) -> list[UnansweredQuestion]:
     return (
         db.query(UnansweredQuestion)
         .filter(UnansweredQuestion.dismissed == 0)
         .order_by(UnansweredQuestion.frequency.desc())
+        .offset(skip)
+        .limit(limit)
         .all()
     )
 
-def get_by_id(db: Session, question_id: int) -> UnansweredQuestion | None:
+def get_count(db: Session) -> int:
+    return (
+        db.query(UnansweredQuestion)
+        .filter(UnansweredQuestion.dismissed == 0)
+        .count()
+    )
+
+def get_by_id(db: Session, question_id: int) -> Optional[UnansweredQuestion]:
     return db.query(UnansweredQuestion).filter(UnansweredQuestion.id == question_id).first()
 
-def find_active_by_text(db: Session, question: str) -> UnansweredQuestion | None:
+def find_active_by_text(db: Session, question: str) -> Optional[UnansweredQuestion]:
     return (
         db.query(UnansweredQuestion)
         .filter(

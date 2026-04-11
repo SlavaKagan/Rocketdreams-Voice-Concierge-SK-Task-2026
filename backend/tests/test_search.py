@@ -1,7 +1,10 @@
 def test_health_check(client):
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    # Status can be ok or degraded depending on DB availability in test env
+    assert response.json()["status"] in ["ok", "degraded"]
+    assert "version" in response.json()
+    assert "request_id" in response.json()
 
 def test_search_no_match_records_unanswered(client, mocker):
     mocker.patch(

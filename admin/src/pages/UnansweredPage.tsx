@@ -1,11 +1,11 @@
 import { useState } from "react";
 import type { UnansweredQuestion } from "../types";
 import { useUnanswered } from "../hooks";
-import { Button, Badge, Modal } from "../components/ui";
+import { Button, Badge, Modal, ErrorMessage, LoadingSpinner } from "../components/ui";
 import { FAQ_CATEGORIES } from "../constants";
 
 export default function UnansweredPage() {
-  const { data: questions = [], isLoading, convert, dismiss } = useUnanswered();
+  const { data: questions = [], isLoading, isError, refetch, convert, dismiss } = useUnanswered();
   const [selected, setSelected] = useState<UnansweredQuestion | null>(null);
   const [answer, setAnswer] = useState("");
   const [category, setCategory] = useState("General");
@@ -32,8 +32,17 @@ export default function UnansweredPage() {
         </p>
       </div>
 
+      {isError && (
+        <div className="mb-6">
+          <ErrorMessage
+            message="Failed to load questions. Is the backend running?"
+            onRetry={() => refetch()}
+          />
+        </div>
+      )}
+
       {isLoading ? (
-        <p className="text-gray-500">Loading...</p>
+        <LoadingSpinner text="Loading questions..." />
       ) : questions.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <p className="text-lg">No unanswered questions 🎉</p>
@@ -86,11 +95,8 @@ export default function UnansweredPage() {
               <p className="text-xs text-gray-500 mb-1">Guest question</p>
               <p className="text-white text-sm">{selected.question}</p>
             </div>
-
             <div>
-              <label className="text-sm text-gray-400 block mb-1">
-                Category
-              </label>
+              <label className="text-sm text-gray-400 block mb-1">Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -101,7 +107,6 @@ export default function UnansweredPage() {
                 ))}
               </select>
             </div>
-
             <div>
               <label className="text-sm text-gray-400 block mb-1">Answer</label>
               <textarea
@@ -112,7 +117,6 @@ export default function UnansweredPage() {
                 placeholder="Write the answer..."
               />
             </div>
-
             <div className="flex gap-2 justify-end">
               <Button variant="ghost" onClick={() => setSelected(null)}>
                 Cancel

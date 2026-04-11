@@ -12,8 +12,16 @@ router = APIRouter(prefix="/api", tags=["Unanswered Questions"])
 logger = logging.getLogger("meridian.routes.unanswered")
 
 @router.get("/unanswered", response_model=List[UnansweredResponse])
-def get_unanswered(db: Session = Depends(get_db)):
-    return unanswered_repo.get_all_active(db)
+def get_unanswered(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    return unanswered_repo.get_all_active(db, skip=skip, limit=limit)
+
+@router.get("/unanswered/count")
+def get_unanswered_count(db: Session = Depends(get_db)):
+    return {"count": unanswered_repo.get_count(db)}
 
 @router.post("/unanswered/{question_id}/convert", response_model=dict)
 def convert_to_faq(question_id: int, body: ConvertToFAQRequest, db: Session = Depends(get_db)):

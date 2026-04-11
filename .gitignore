@@ -43,3 +43,6 @@ logs/
 *.log
 backend/logs/
 agent/logs/
+
+# Make sure this line does NOT exist
+migrations/

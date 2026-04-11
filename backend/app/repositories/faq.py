@@ -1,14 +1,24 @@
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from typing import Optional
 from app.models.models import FAQItem
 
 logger = logging.getLogger("meridian.repository.faq")
 
-def get_all(db: Session) -> list[FAQItem]:
-    return db.query(FAQItem).order_by(FAQItem.category, FAQItem.id).all()
+def get_all(db: Session, skip: int = 0, limit: int = 100) -> list[FAQItem]:
+    return (
+        db.query(FAQItem)
+        .order_by(FAQItem.category, FAQItem.id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
 
-def get_by_id(db: Session, faq_id: int) -> FAQItem | None:
+def get_count(db: Session) -> int:
+    return db.query(FAQItem).count()
+
+def get_by_id(db: Session, faq_id: int) -> Optional[FAQItem]:
     return db.query(FAQItem).filter(FAQItem.id == faq_id).first()
 
 def create(db: Session, question: str, answer: str, category: str, embedding: list[float]) -> FAQItem:
@@ -43,7 +53,7 @@ def delete(db: Session, item: FAQItem) -> None:
     db.commit()
     logger.info(f"Deleted FAQ item id={item.id}")
 
-def search_by_embedding(db: Session, embedding: list[float]) -> tuple[FAQItem, float] | None:
+def search_by_embedding(db: Session, embedding: list[float]):
     embedding_str = "[" + ",".join(str(x) for x in embedding) + "]"
     result = db.execute(
         text("""

@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.constants import SIMILARITY_THRESHOLD
@@ -7,14 +7,16 @@ from app.schemas.search import SearchRequest, SearchResponse
 from app.services.embedding import get_embedding
 from app.repositories import faq as faq_repo
 from app.repositories import unanswered as unanswered_repo
+from app.main import limiter
 
 router = APIRouter(prefix="/api", tags=["Search"])
 logger = logging.getLogger("meridian.routes.search")
 
 @router.post("/search", response_model=SearchResponse)
-def search_faq(request: SearchRequest, db: Session = Depends(get_db)):
-    logger.info(f"Search query: '{request.query}'")
-    embedding = get_embedding(request.query)
+@limiter.limit("30/minute")
+def search_faq(request: Request, body: SearchRequest, db: Session = Depends(get_db)):
+    logger.info(f"Search query: '{body.query}'")
+    embedding = get_embedding(body.query)
     result = faq_repo.search_by_embedding(db, embedding)
 
     if result:
@@ -29,6 +31,6 @@ def search_faq(request: SearchRequest, db: Session = Depends(get_db)):
                 similarity=similarity
             )
 
-    logger.info(f"No match found for query: '{request.query}'")
-    unanswered_repo.record(db, request.query)
+    logger.info(f"No match found for query: '{body.query}'")
+    unanswered_repo.record(db, body.query)
     return SearchResponse(found=False)

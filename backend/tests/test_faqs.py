@@ -56,6 +56,10 @@ def test_delete_faq_not_found(client):
     response = client.delete("/api/faqs/99999")
     assert response.status_code == 404
 
-def test_update_faq_not_found(client):
-    response = client.put("/api/faqs/99999", json={"answer": "x"})
+def test_update_faq_not_found(client, mocker):
+    mocker.patch(
+        "app.routes.faqs.get_embedding",
+        return_value=[0.1] * 1536
+    )
+    response = client.put("/api/faqs/99999", json={"answer": "Valid answer text"})
     assert response.status_code == 404

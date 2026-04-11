@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FAQItem, FAQCreate, FAQUpdate } from "../types";
 import { useFAQs } from "../hooks";
-import { Button, Modal } from "../components/ui";
+import { Button, Modal, ErrorMessage, LoadingSpinner } from "../components/ui";
 import FAQForm from "../components/FAQForm";
 
 type ModalState =
@@ -10,7 +10,7 @@ type ModalState =
   | null;
 
 export default function FAQsPage() {
-  const { data: faqs = [], isLoading, create, update, remove } = useFAQs();
+  const { data: faqs = [], isLoading, isError, refetch, create, update, remove } = useFAQs();
   const [modal, setModal] = useState<ModalState>(null);
   const [search, setSearch] = useState("");
 
@@ -55,6 +55,15 @@ export default function FAQsPage() {
         <Button onClick={() => setModal({ mode: "create" })}>+ Add FAQ</Button>
       </div>
 
+      {isError && (
+        <div className="mb-6">
+          <ErrorMessage
+            message="Failed to load FAQs. Is the backend running?"
+            onRetry={() => refetch()}
+          />
+        </div>
+      )}
+
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -63,7 +72,7 @@ export default function FAQsPage() {
       />
 
       {isLoading ? (
-        <p className="text-gray-500">Loading...</p>
+        <LoadingSpinner text="Loading FAQs..." />
       ) : (
         <div className="space-y-6">
           {Object.entries(grouped).map(([category, items]) => (
