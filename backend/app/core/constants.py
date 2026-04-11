@@ -1,11 +1,41 @@
-# Semantic search
+# ── Semantic Search ────────────────────────────────────────────────────────────
 SIMILARITY_THRESHOLD = 0.78
 EMBEDDING_MODEL = "text-embedding-ada-002"
 EMBEDDING_DIMENSIONS = 1536
+EMBEDDING_RETRIES = 3
+EMBEDDING_RETRY_DELAY = 1.0
 
-# Voice config
+# ── Voice ──────────────────────────────────────────────────────────────────────
 DEFAULT_VOICE_ID = 1
+ELEVENLABS_TTS_MODEL = "eleven_turbo_v2_5"
+VOICE_PREVIEW_TEXT = (
+    "Welcome to The Meridian Casino and Resort. "
+    "How may I assist you this evening?"
+)
 
+# ── Playground ─────────────────────────────────────────────────────────────────
+PLAYGROUND_ROOM = "meridian-playground"
+
+# ── API ────────────────────────────────────────────────────────────────────────
+API_VERSION = "1.0.0"
+RATE_LIMIT_SEARCH = "30/minute"
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
+
+# ── Database Connection Pool ───────────────────────────────────────────────────
+DB_POOL_SIZE = 10
+DB_MAX_OVERFLOW = 20
+DB_POOL_RECYCLE = 3600
+
+# ── HTTP Client ────────────────────────────────────────────────────────────────
+HTTP_SEARCH_TIMEOUT = 10.0
+HTTP_VOICE_TIMEOUT = 5.0
+HTTP_RETRIES = 3
+HTTP_RETRY_DELAY = 1.0
+
+# ── Voices ─────────────────────────────────────────────────────────────────────
 VOICES = {
     1: {
         "id": 1,
@@ -32,6 +62,3 @@ VOICES = {
         "description": "Female, American, calm and reassuring. Sophisticated and clear."
     },
 }
-
-# Playground
-PLAYGROUND_ROOM = "meridian-playground"

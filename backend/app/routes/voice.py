@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from elevenlabs import ElevenLabs
 from app.core.database import get_db
-from app.core.constants import VOICES
+from app.core.constants import VOICES, VOICE_PREVIEW_TEXT, ELEVENLABS_TTS_MODEL
 from app.core.config import settings
 from app.schemas.voice import VoicesResponse, VoiceOption, VoiceUpdateRequest
 from app.repositories import voice as voice_repo
@@ -13,7 +13,6 @@ from app.repositories import voice as voice_repo
 router = APIRouter(prefix="/api", tags=["Voice"])
 logger = logging.getLogger("meridian.routes.voice")
 
-PREVIEW_TEXT = "Welcome to The Meridian Casino and Resort. How may I assist you this evening?"
 
 @router.get("/voices", response_model=VoicesResponse)
 def get_voices(db: Session = Depends(get_db)):
@@ -22,6 +21,7 @@ def get_voices(db: Session = Depends(get_db)):
         active_voice_id=config.active_voice_id,
         voices=[VoiceOption(**v) for v in VOICES.values()]
     )
+
 
 @router.put("/voices/active", response_model=dict)
 def set_active_voice(body: VoiceUpdateRequest, db: Session = Depends(get_db)):
@@ -32,6 +32,7 @@ def set_active_voice(body: VoiceUpdateRequest, db: Session = Depends(get_db)):
         )
     config = voice_repo.set_active_voice(db, body.voice_id)
     return {"active_voice_id": config.active_voice_id}
+
 
 @router.get("/voices/{voice_id}/preview")
 def preview_voice(voice_id: int):
@@ -46,15 +47,11 @@ def preview_voice(voice_id: int):
         client = ElevenLabs(api_key=settings.ELEVENLABS_API_KEY)
         audio = client.text_to_speech.convert(
             voice_id=elevenlabs_id,
-            text=PREVIEW_TEXT,
-            model_id="eleven_turbo_v2_5",
+            text=VOICE_PREVIEW_TEXT,
+            model_id=ELEVENLABS_TTS_MODEL,
         )
-
-        # audio is a generator — collect all chunks
         audio_bytes = b"".join(audio)
-
         logger.info(f"Generated voice preview for voice_id={voice_id} name={voice['name']}")
-
         return StreamingResponse(
             io.BytesIO(audio_bytes),
             media_type="audio/mpeg",

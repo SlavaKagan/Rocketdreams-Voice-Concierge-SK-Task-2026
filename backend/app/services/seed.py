@@ -80,8 +80,9 @@ def seed():
             )
             db.add(faq)
 
-        # Seed default voice config
-        voice_config = VoiceConfig(active_voice_id=1)
+       # Seed default voice config
+        from app.core.constants import DEFAULT_VOICE_ID
+        voice_config = VoiceConfig(active_voice_id=DEFAULT_VOICE_ID)
         db.add(voice_config)
 
         db.commit()

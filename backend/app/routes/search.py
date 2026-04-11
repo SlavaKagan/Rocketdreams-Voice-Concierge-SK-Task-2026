@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.constants import SIMILARITY_THRESHOLD
+from app.core.constants import SIMILARITY_THRESHOLD, RATE_LIMIT_SEARCH
 from app.schemas.search import SearchRequest, SearchResponse
 from app.services.embedding import get_embedding
 from app.repositories import faq as faq_repo
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api", tags=["Search"])
 logger = logging.getLogger("meridian.routes.search")
 
 @router.post("/search", response_model=SearchResponse)
-@limiter.limit("30/minute")
+@limiter.limit(RATE_LIMIT_SEARCH)
 def search_faq(request: Request, body: SearchRequest, db: Session = Depends(get_db)):
     logger.info(f"Search query: '{body.query}'")
     embedding = get_embedding(body.query)

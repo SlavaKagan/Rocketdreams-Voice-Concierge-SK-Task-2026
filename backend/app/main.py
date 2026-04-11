@@ -7,6 +7,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from app.core.database import init_db
 from app.core.logging import setup_logging
+from app.core.constants import API_VERSION, ALLOWED_ORIGINS
 from app.routes import register_routers
 
 setup_logging()
@@ -20,7 +21,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Meridian Concierge API",
-    version="1.0.0",
+    version=API_VERSION,
     description="Backend API for The Meridian Casino & Resort Voice Concierge",
     lifespan=lifespan
 )
@@ -30,7 +31,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -68,7 +69,6 @@ async def health(request: Request):
     from sqlalchemy import text
     from app.core.database import engine
     from app.services.embedding import get_cache_stats
-
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -80,6 +80,6 @@ async def health(request: Request):
         "status": "ok" if db_status == "ok" else "degraded",
         "database": db_status,
         "request_id": request.state.request_id,
-        "version": "1.0.0",
+        "version": API_VERSION,
         "cache": get_cache_stats(),
     }
